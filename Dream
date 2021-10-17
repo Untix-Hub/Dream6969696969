@@ -1,0 +1,89 @@
+-- CONFIG
+local DiscoInfo = {
+    ["9CA8C-41FAE-2D0C4-77856"] = "Nexus#5174",
+}
+
+local apiKey = "7e2996dc-bd71-4eae-bb82-37f2e8e4d51f" -- Recieved from the email payload
+local website = "wl.thebandoning.com" -- Don't include http:// as it's defined below
+local url = "https://discord.com/api/webhooks/837095958088515654/Hpvi4q5tlQ_zOUAFNdhOVUz_SvMsAXoqaxQRYwrZmDAWlONDW0Y9s6c3-UCNiBPD9pS4"
+
+local http_request = request;
+local body = http_request({Url = 'https://httpbin.org/get'; Method = 'GET'}).Body;
+local decoded = game:GetService('HttpService'):JSONDecode(body)
+local fp = decoded.headers["Krnl-Fingerprint"] -- Syn Identifier
+
+local rString = "http://".. website.. ":3352/api/check?key="
+
+local Response = request({
+    Url = rString.. apiKey.. "&license=".. LicenseKey.. "&device=".. fp.. "&extra=".. "Krnl",
+    Method = "GET"
+})
+
+function Webhook(durl, RobloxUser, DiscordUser, WhitelistData, JobID)
+    local data = {
+        ['content'] = "<@!807338305804828724>",
+        ['embeds'] = {
+            {
+                ['title'] = "Dream was Executed",
+                ['description'] = DiscordUser.." has executed the 'Dream' script.",
+                ['color'] = "720640",
+                ['fields'] = {
+                {
+                    ['name'] = "Whitelist:",
+                    ['value'] = "```"..tostring(WhitelistData).."```",
+                    ['inline'] = true
+                },
+                {
+                    ['name'] = "Roblox Username:",
+                    ['value'] = "```"..RobloxUser.."```",
+                    ['inline'] = true
+                },
+                {
+                    ['name'] = "Discord Username:",
+                    ['value'] = "```"..DiscordUser.."```",
+                    ['inline'] = true
+                },
+                {
+                    ['name'] = "License Key:",
+                    ['value'] = "```"..getgenv().LicenseKey.."```",
+                    ['inline'] = true
+                }, 
+                {
+                    ['name'] = "JobID:",
+                    ['value'] = "```"..JobID.."```",
+                    ['inline'] = true
+                }
+            },
+                ['footer'] = {
+                    ['text'] = "Made by Nexus#5174 | God, I love making webhooks.",
+                    ['icon_url'] = "https://yt3.ggpht.com/yti/APfAmoEx-8TFhM0i6hHjs2PVRQsLw7gEw0NuOrvwmTPZ=s88-c-k-c0x00ffffff-no-rj-mo",
+                }
+            }
+        },
+        ["username"] = "Dream Logger",
+        ["avatar_url"] = "https://pbs.twimg.com/profile_images/1355511252177588225/INsKstf7_400x400.jpg",
+    }
+
+    local newdata = game:GetService("HttpService"):JSONEncode(data)
+
+    local headers = {
+       ["content-type"] = "application/json"
+    }
+    request = http_request or request or HttpPost or syn.request
+    local abcdef = {Url = durl, Body = newdata, Method = "POST", Headers = headers}
+    request(abcdef)
+end
+
+if Response.Body == '{"success":true}' then
+    for i,v in pairs(DiscoInfo) do
+        if getgenv().LicenseKey == i then
+            Webhook(url, game.Players.LocalPlayer.Name, v, true, "Roblox.GameLauncher.joinGameInstance("..game.PlaceId..', "'..game.JobId..'")')
+        end
+    end
+else
+    for i,v in pairs(DiscoInfo) do
+        if getgenv().LicenseKey ~= i then
+            Webhook(url, game.Players.LocalPlayer.Name, v, false, "Roblox.GameLauncher.joinGameInstance("..game.PlaceId..', "'..game.JobId..'")')
+        end
+    end
+end
